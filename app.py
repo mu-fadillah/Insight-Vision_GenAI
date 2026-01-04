@@ -3,12 +3,12 @@ import streamlit as st
 import google.generativeai as genai
 from PIL import Image
 from dotenv import load_dotenv
-import database  # Pastikan file database.py ada di folder yang sama
+import database  # Mengimpor file database.py
 from docx import Document
 from fpdf import FPDF
 from io import BytesIO
 
-# --- 1. SETUP KONFIGURASI & THEME ---
+# --- 1. SETUP KONFIGURASI ---
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
 
@@ -19,9 +19,20 @@ if not api_key:
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel('gemini-flash-latest')
 
+# Konfigurasi Halaman
 st.set_page_config(page_title="InsightVision", layout="wide", page_icon="📸")
 
-# --- 2. FUNGSI EKSPOR (DOCX & PDF) ---
+# --- 2. FUNGSI LOAD CSS EKSTERNAL ---
+def local_css(file_name):
+    try:
+        with open(file_name) as f:
+            st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    except FileNotFoundError:
+        st.warning("File style.css tidak ditemukan. Menggunakan tampilan standar.")
+
+local_css("style.css")
+
+# --- 3. FUNGSI EKSPOR (DOCX & PDF) ---
 def buat_docx(teks):
     doc = Document()
     doc.add_heading('Laporan Analisis InsightVision', 0)
@@ -34,63 +45,13 @@ def buat_pdf(teks):
     pdf = FPDF()
     pdf.add_page()
     pdf.set_font("Arial", size=12)
-    # Membersihkan karakter non-latin untuk menghindari error library FPDF standar
+    # Membersihkan karakter non-latin agar tidak error di FPDF
     clean_text = teks.encode('latin-1', 'ignore').decode('latin-1')
     pdf.multi_cell(0, 10, txt=clean_text)
     return pdf.output(dest='S').encode('latin-1')
 
-# --- 3. CSS CUSTOM (TAMPILAN MEWAH) ---
-st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-    html, body, [class*="css"]  {
-        font-family: 'Inter', sans-serif;
-    }
-
-    /* Efek Glassmorphism pada Sidebar */
-    [data-testid="stSidebar"] {
-        background: rgba(28, 31, 46, 0.95);
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    /* Styling Button Utama */
-    .stButton>button {
-        width: 100%;
-        border-radius: 12px;
-        height: 3em;
-        background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-    .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        color: white;
-    }
-
-    /* Download Buttons Styling */
-    div.stDownloadButton > button {
-        background-color: #2e3b4e !important;
-        color: white !important;
-        border: 1px solid rgba(255,255,255,0.2) !important;
-    }
-    
-    .footer {
-        position: fixed;
-        bottom: 10px;
-        text-align: center;
-        width: 100%;
-        color: gray;
-        font-size: 12px;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
 # --- 4. SIDEBAR RIWAYAT ---
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/1055/1055666.png", width=80)
     st.title("InsightVision")
     st.markdown("---")
     st.subheader("📜 Riwayat Terakhir")
@@ -157,7 +118,7 @@ with col2:
         st.success("Analisis Berhasil!")
         st.markdown(st.session_state['hasil_terakhir'])
         
-        # --- FITUR EKSPOR (DOCX & PDF) ---
+        # --- FITUR EKSPOR ---
         st.markdown("---")
         st.subheader("📥 Ekspor Laporan")
         
@@ -202,4 +163,5 @@ if uploaded_file is not None and 'hasil_terakhir' in st.session_state:
                 except Exception as e:
                     st.error(f"Gagal merespon: {e}")
 
+# Footer
 st.markdown("<br><br><div class='footer'>InsightVision v1.1 | 2026</div>", unsafe_allow_html=True)
