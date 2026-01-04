@@ -5,4 +5,4 @@ buat folder env di dalam folder project menggunakan terminal vscode :
 
 
 *API KEY : Google AI Studio
-DB : MYSQL
+*DB : MYSQL
