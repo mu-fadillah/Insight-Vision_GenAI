@@ -4,5 +4,5 @@ buat folder env di dalam folder project menggunakan terminal vscode :
 3. pip install google-generativeai python-dotenv pillow mysql-connector-python streamlit (install library yang dibutuhin)
 
 
-*API KEY : Google AI Studio
-*DB : MYSQL
+- API KEY : Google AI Studio
+- DB : MYSQL
